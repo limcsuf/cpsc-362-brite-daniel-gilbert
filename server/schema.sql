@@ -1,3 +1,6 @@
+CREATE DATABASE IF NOT EXISTS volunteer_site_362;
+USE volunteer_site_362;
+
 -- Drop tables in reverse order of creation to avoid foreign key constraints
 DROP TABLE IF EXISTS event_attendees;
 DROP TABLE IF EXISTS events;
