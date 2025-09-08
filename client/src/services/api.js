@@ -1,7 +1,7 @@
 // client/src/services/api.js
 import { getToken } from "./auth.js";
 
-const API_BASE = "http://localhost:3001/api";
+const API_BASE = "/api"; // Proxy to backend server
 const FETCH_TIMEOUT = 10000; // 10 seconds
 
 export async function apiFetch(endpoint, options = {}) {

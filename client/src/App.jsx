@@ -10,13 +10,20 @@ import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import NotFound from "./pages/NotFound.jsx";
+import EditEvent from "./pages/EditEvent.jsx";
+import CreateEvent from "./pages/CreateEvent.jsx";
+import ManageAttendees from "./pages/ManageAttendees.jsx";
 
 // This component protects routes that require a logged-in user.
 const ProtectedRoute = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  if (loading) {
+    // If the auth state is still loading, you can show a loading spinner or placeholder
+    return <div>Loading...</div>;
+  }
   if (!user) {
-    // If the user is not logged in, redirect them to the login page.
-    return <Navigate to="/login" replace />;
+    // If no user is logged in, redirect to the login page
+    return <Navigate to="/login" />;
   }
   return children;
 };
@@ -25,7 +32,7 @@ function App() {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
       <Header />
       <main className="container mx-auto p-4">
         <Routes>
@@ -47,6 +54,33 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/edit-event/:eventId"
+            element={
+              <ProtectedRoute>
+                <EditEvent />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/create-event"
+            element={
+              <ProtectedRoute>
+                <CreateEvent />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/manage-attendees/:eventId"
+            element={
+              <ProtectedRoute>
+                <ManageAttendees />
               </ProtectedRoute>
             }
           />

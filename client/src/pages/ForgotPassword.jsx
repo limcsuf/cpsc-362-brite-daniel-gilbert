@@ -25,19 +25,19 @@ export default function ForgotPassword() {
 
   return (
     <div className="flex items-center justify-center mt-10">
-        <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
-            <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">Reset Password</h2>
+        <div className="max-w-md w-full bg-gray-100 dark:bg-gray-800 p-8 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold text-center mb-6 text-gray-800 dark:text-gray-200">Reset Password</h2>
             {message && <p className="text-center text-green-600 mb-4">{message}</p>}
             {error && <p className="text-center text-red-500 mb-4">{error}</p>}
             {!message && (
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <p className="text-sm text-center text-gray-600">Enter your email and a reset link will be sent (check the server console).</p>
+                    <p className="text-sm text-center bg-gray-100 dark:bg-gray-700 p-2 rounded-md">Enter your email and a reset link will be sent (check the server console).</p>
                     <input 
                         type="email" 
                         placeholder="Your Email" 
                         value={email} 
                         onChange={(e) => setEmail(e.target.value)} 
-                        className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                        className="w-full p-3 bg-gray-50 dark:bg-gray-700 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
                         required 
                     />
                     <button type="submit" className="w-full p-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">Send Reset Link</button>
