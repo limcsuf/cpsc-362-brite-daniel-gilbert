@@ -26,9 +26,10 @@ CREATE TABLE IF NOT EXISTS users (
 -- Create the managers table.
 -- This table explicitly defines which users have manager roles.
 CREATE TABLE IF NOT EXISTS managers (
-	manager_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL UNIQUE, -- Each user can only be a manager once
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    manager_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL UNIQUE,
+    FOREIGN KEY (user_id)
+        REFERENCES users (user_id)
 );
 
 -- Create the events table.
@@ -38,56 +39,59 @@ CREATE TABLE IF NOT EXISTS events (
     date DATETIME NOT NULL,
     address TEXT NOT NULL,
     event_manager_id INT NOT NULL,
-    FOREIGN KEY (event_manager_id) REFERENCES users(user_id)
+    FOREIGN KEY (event_manager_id)
+        REFERENCES users (user_id)
 );
 
 -- Create the event_attendees join table.
 CREATE TABLE IF NOT EXISTS event_attendees (
     event_id INT NOT NULL,
     user_id INT NOT NULL,
-    PRIMARY KEY (event_id, user_id),
-    FOREIGN KEY (event_id) REFERENCES events(event_id),
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    PRIMARY KEY (event_id , user_id),
+    FOREIGN KEY (event_id)
+        REFERENCES events (event_id),
+    FOREIGN KEY (user_id)
+        REFERENCES users (user_id)
 );
 
 -- --- DUMMY DATA ---
--- Hash for 'password123': $2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S
+-- Hash for 'password123': $2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty
 
 -- Insert original users
 INSERT INTO users (user_id, name, email, username, password_hash, is_manager) VALUES
-(1, 'Alice Johnson', 'alice.j@example.com', 'alicej', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 1),
-(2, 'Bob Williams', 'bob.w@example.com', 'bobw', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 1),
-(3, 'Charlie Brown', 'charlie.b@example.com', 'charlieb', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(4, 'Diana Prince', 'diana.p@example.com', 'dianap', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(5, 'Eve Adams', 'eve.a@example.com', 'evea', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(6, 'Frank Miller', 'frank.m@example.com', 'frankm', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(7, 'Grace Lee', 'grace.l@example.com', 'gracel', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0);
+(1, 'Alice Johnson', 'alice.j@example.com', 'alicej', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 1),
+(2, 'Bob Williams', 'bob.w@example.com', 'bobw', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 1),
+(3, 'Charlie Brown', 'charlie.b@example.com', 'charlieb', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(4, 'Diana Prince', 'diana.p@example.com', 'dianap', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(5, 'Eve Adams', 'eve.a@example.com', 'evea', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(6, 'Frank Miller', 'frank.m@example.com', 'frankm', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(7, 'Grace Lee', 'grace.l@example.com', 'gracel', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0);
 
 -- --- ADDITIONAL DUMMY USERS ---
 INSERT INTO users (user_id, name, email, username, password_hash, is_manager) VALUES
-(8, 'Henry Green', 'henry.g@example.com', 'henryg', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(9, 'Ivy Taylor', 'ivy.t@example.com', 'ivyt', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(10, 'Jack White', 'jack.w@example.com', 'jackw', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(11, 'Karen Black', 'karen.b@example.com', 'karenb', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(12, 'Leo King', 'leo.k@example.com', 'leok', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(13, 'Mona Scott', 'mona.s@example.com', 'monas', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(14, 'Nate Young', 'nate.y@example.com', 'natey', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(15, 'Olivia Hall', 'olivia.h@example.com', 'oliviah', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(16, 'Paul Allen', 'paul.a@example.com', 'paula', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(17, 'Quinn Clark', 'quinn.c@example.com', 'quinnc', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(18, 'Rachel Lewis', 'rachel.l@example.com', 'rachell', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(19, 'Sam Turner', 'sam.t@example.com', 'samt', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(20, 'Tina Baker', 'tina.b@example.com', 'tinab', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(21, 'Uma Patel', 'uma.p@example.com', 'umap', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(22, 'Vince Carter', 'vince.c@example.com', 'vincec', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(23, 'Wendy Harris', 'wendy.h@example.com', 'wendyh', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(24, 'Xavier Rodriguez', 'xavier.r@example.com', 'xavierr', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(25, 'Yara Martinez', 'yara.m@example.com', 'yaram', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(26, 'Zane Garcia', 'zane.g@example.com', 'zaneg', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(27, 'Aaron Hill', 'aaron.h@example.com', 'aaronh', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(28, 'Betty Cooper', 'betty.c@example.com', 'bettyc', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(29, 'Carl Long', 'carl.l@example.com', 'carll', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0),
-(30, 'Donna Moore', 'donna.m@example.com', 'donnam', '$2a$10$kbc4T.e5V6ecPrwHwIE.Uu9S222955jjp3y4.iB.PfYg02I7oVn4S', 0);
+(8, 'Henry Green', 'henry.g@example.com', 'henryg', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(9, 'Ivy Taylor', 'ivy.t@example.com', 'ivyt', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(10, 'Jack White', 'jack.w@example.com', 'jackw', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(11, 'Karen Black', 'karen.b@example.com', 'karenb', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(12, 'Leo King', 'leo.k@example.com', 'leok', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(13, 'Mona Scott', 'mona.s@example.com', 'monas', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(14, 'Nate Young', 'nate.y@example.com', 'natey', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(15, 'Olivia Hall', 'olivia.h@example.com', 'oliviah', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(16, 'Paul Allen', 'paul.a@example.com', 'paula', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(17, 'Quinn Clark', 'quinn.c@example.com', 'quinnc', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(18, 'Rachel Lewis', 'rachel.l@example.com', 'rachell', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(19, 'Sam Turner', 'sam.t@example.com', 'samt', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(20, 'Tina Baker', 'tina.b@example.com', 'tinab', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(21, 'Uma Patel', 'uma.p@example.com', 'umap', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(22, 'Vince Carter', 'vince.c@example.com', 'vincec', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(23, 'Wendy Harris', 'wendy.h@example.com', 'wendyh', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(24, 'Xavier Rodriguez', 'xavier.r@example.com', 'xavierr', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(25, 'Yara Martinez', 'yara.m@example.com', 'yaram', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(26, 'Zane Garcia', 'zane.g@example.com', 'zaneg', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(27, 'Aaron Hill', 'aaron.h@example.com', 'aaronh', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(28, 'Betty Cooper', 'betty.c@example.com', 'bettyc', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(29, 'Carl Long', 'carl.l@example.com', 'carll', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(30, 'Donna Moore', 'donna.m@example.com', 'donnam', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0);
 
 
 -- Populate the managers table with the user_ids of the managers
