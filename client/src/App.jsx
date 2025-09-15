@@ -13,6 +13,8 @@ import NotFound from "./pages/NotFound.jsx";
 import EditEvent from "./pages/EditEvent.jsx";
 import CreateEvent from "./pages/CreateEvent.jsx";
 import ManageAttendees from "./pages/ManageAttendees.jsx";
+import EventsPage from "./pages/EventsPage.jsx";
+import LogEvent from "./pages/LogEvent.jsx";
 
 // This component protects routes that require a logged-in user.
 const ProtectedRoute = ({ children }) => {
@@ -89,6 +91,16 @@ function App() {
           <Route
             path="/"
             element={<Navigate to={user ? "/dashboard" : "/login"} />}
+          />
+
+          <Route 
+            path="/events"
+            element={<EventsPage />} 
+          />
+
+          <Route 
+            path="/log"
+            element={<LogEvent />}
           />
 
           {/* Catch-all route for any undefined paths */}
