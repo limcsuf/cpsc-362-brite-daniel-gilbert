@@ -1,7 +1,5 @@
 # CPSC 362 Project
 
-[TOC]
-
 ## Members
 
 - Brite Bartnek
@@ -22,7 +20,7 @@ Navigate to the `server` directory and create your environment file:
 
 ```bash
 cd server
-cp .env.example .env
+cp .env.txt .env
 ```
 
 Now, open the newly created server/.env file and replace the placeholder values with your own secrets.
@@ -33,7 +31,7 @@ Navigate to the client directory and create your environment file:
 
 ```bash
 cd client
-cp .env.example .env
+cp .env.txt .env
 ```
 
 Now, open the newly created client/.env file and add your Google Maps API key.
