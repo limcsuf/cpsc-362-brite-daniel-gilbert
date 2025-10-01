@@ -124,8 +124,9 @@ app.post("/api/users", async (req, res) => {
 
     await connection.commit();
 
-    const message = isManager
-      ? "Manager account created successfully. Please log in."
+    const message =
+      isManager ?
+        "Manager account created successfully. Please log in."
       : "User created successfully. Please log in.";
 
     res.status(201).json({ message });
@@ -255,6 +256,20 @@ app.get("/api/events", async (req, res) => {
   }
 });
 
+app.get("/api/events/categories", async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT DISTINCT category FROM events WHERE category IS NOT NULL AND category <> '' ORDER BY category ASC"
+    );
+    // Map the array of objects ({ category: 'Name' }) to an array of strings ['Name']
+    const categories = rows.map((row) => row.category);
+    res.json(categories);
+  } catch (err) {
+    console.error("Error fetching event categories:", err);
+    res.status(500).json({ message: "Error fetching event categories." });
+  }
+});
+
 // Get event IDs a specific user is attending
 app.get("/api/users/:userId/attending", async (req, res) => {
   try {
@@ -372,7 +387,7 @@ function requireManager(req, res, next) {
 // Create a new event
 app.post("/api/events", requireManager, async (req, res) => {
   try {
-    const { title, date, address } = req.body;
+    const { title, date, address, category } = req.body;
     const managerId = req.user.user_id;
 
     const formattedDate = new Date(date)
@@ -381,8 +396,8 @@ app.post("/api/events", requireManager, async (req, res) => {
       .replace("T", " ");
 
     await db.query(
-      "INSERT INTO events (title, date, address, event_manager_id) VALUES (?, ?, ?, ?)",
-      [title, formattedDate, address, managerId]
+      "INSERT INTO events (title, date, address, category, event_manager_id) VALUES (?, ?, ?, ?, ?)",
+      [title, formattedDate, address, category, managerId]
     );
     res.status(201).json({ message: "Event created successfully." });
   } catch (err) {
@@ -395,15 +410,15 @@ app.post("/api/events", requireManager, async (req, res) => {
 app.put("/api/events/:eventId", requireManager, async (req, res) => {
   try {
     const { eventId } = req.params;
-    const { title, date, address } = req.body;
+    const { title, date, address, category } = req.body;
     const formattedDate = new Date(date)
       .toISOString()
       .slice(0, 19)
       .replace("T", " ");
 
     await db.query(
-      "UPDATE events SET title = ?, date = ?, address = ? WHERE event_id = ?",
-      [title, formattedDate, address, eventId]
+      "UPDATE events SET title = ?, date = ?, address = ?, category = ? WHERE event_id = ?",
+      [title, formattedDate, address, category, eventId]
     );
     res.json({ message: "Event updated successfully." });
   } catch (err) {

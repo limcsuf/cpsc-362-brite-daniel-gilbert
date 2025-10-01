@@ -1,6 +1,6 @@
 {
   "name": "event-manager-server",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "Backend server for the CPSC 362 project.",
   "main": "server.js",
   "type": "module",

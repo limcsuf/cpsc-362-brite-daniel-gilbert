@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS events (
     title VARCHAR(255) NOT NULL,
     date DATETIME NOT NULL,
     address TEXT NOT NULL,
+    category VARCHAR(100) NOT NULL DEFAULT 'General',
     event_manager_id INT NOT NULL,
     FOREIGN KEY (event_manager_id)
         REFERENCES users (user_id)
@@ -65,10 +66,7 @@ INSERT INTO users (user_id, name, email, username, password_hash, is_manager) VA
 (4, 'Diana Prince', 'diana.p@example.com', 'dianap', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
 (5, 'Eve Adams', 'eve.a@example.com', 'evea', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
 (6, 'Frank Miller', 'frank.m@example.com', 'frankm', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
-(7, 'Grace Lee', 'grace.l@example.com', 'gracel', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0);
-
--- --- ADDITIONAL DUMMY USERS ---
-INSERT INTO users (user_id, name, email, username, password_hash, is_manager) VALUES
+(7, 'Grace Lee', 'grace.l@example.com', 'gracel', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
 (8, 'Henry Green', 'henry.g@example.com', 'henryg', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
 (9, 'Ivy Taylor', 'ivy.t@example.com', 'ivyt', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
 (10, 'Jack White', 'jack.w@example.com', 'jackw', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
@@ -91,7 +89,9 @@ INSERT INTO users (user_id, name, email, username, password_hash, is_manager) VA
 (27, 'Aaron Hill', 'aaron.h@example.com', 'aaronh', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
 (28, 'Betty Cooper', 'betty.c@example.com', 'bettyc', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
 (29, 'Carl Long', 'carl.l@example.com', 'carll', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
-(30, 'Donna Moore', 'donna.m@example.com', 'donnam', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0);
+(30, 'Donna Moore', 'donna.m@example.com', 'donnam', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0),
+(31, 'Test Admin', 'admin@example.com', 'admin', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 1),
+(32, 'Test User', 'user@example.com', 'user', '$2a$12$dYTPyk7npBOFUuXkyq4I9.Z2QxeDxF4qdw.I9ZEGBHC/aeLfC1mty', 0);
 
 
 -- Populate the managers table with the user_ids of the managers
@@ -100,12 +100,11 @@ INSERT INTO managers (user_id) VALUES
 (2); -- Bob Williams
 
 -- Insert original events
-INSERT INTO events (event_id, title, date, address, event_manager_id) VALUES
-(1, 'Annual Tech Conference 2025', '2025-10-20 09:00:00', '123 Tech Park, Silicon Valley, CA', 1),
-(2, 'Marketing Summit 2025', '2025-11-15 10:00:00', '456 Market St, San Francisco, CA', 2),
-(3, 'Local Charity Gala', '2025-12-05 18:30:00', '789 Community Hall, Fullerton, CA', 1);
+INSERT INTO events (event_id, title, date, address, category, event_manager_id) VALUES
+(1, 'Annual Tech Conference 2025', '2025-10-20 09:00:00', '123 Tech Park, Silicon Valley, CA', 'Conference', 1),
+(2, 'Marketing Summit 2025', '2025-11-15 10:00:00', '456 Market St, San Francisco, CA', 'Community Service', 2),
+(3, 'Local Charity Gala', '2025-12-05 18:30:00', '789 Community Hall, Fullerton, CA', 'Workshop', 1);
 
--- --- ADDITIONAL DUMMY EVENTS ---
 INSERT INTO events (event_id, title, date, address, event_manager_id) VALUES
 (4, 'Fullerton Park Cleanup', '2025-09-15 09:00:00', '101 Fullerton Creek Rd, Fullerton, CA', 1),
 (5, 'Web Development Workshop', '2025-09-22 11:00:00', '202 Chapman Ave, Fullerton, CA', 2),
