@@ -11,6 +11,9 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [sortOrder, setSortOrder] = useState("asc"); // 'asc' for oldest first, 'desc' for newest first
+
   const handleAttend = async (eventId) => {
     try {
       await apiFetch(`/events/${eventId}/attend`, { method: "POST" });
@@ -58,6 +61,22 @@ export default function Dashboard() {
     fetchData();
   }, [user]);
 
+  const categories = [
+    "All",
+    ...new Set(allEvents.map((e) => e.category).filter(Boolean)),
+  ];
+  const processedEvents = allEvents
+    .filter((event) => {
+      // Filter logic: show all or only those matching the selected category.
+      return selectedCategory === "All" || event.category === selectedCategory;
+    })
+    .sort((a, b) => {
+      // Sort logic: compare dates based on the sortOrder state.
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+    });
+
   if (!user)
     return (
       <div className="text-center mt-8">
@@ -73,25 +92,56 @@ export default function Dashboard() {
     <div className="p-4">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-bold">Event Dashboard</h2>
-        {user.is_manager ? (
-          <Link
-            to="/create-event"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-semibold"
+        <div className="flex items-center space-x-4">
+          <div>
+            <label
+              htmlFor="category-filter"
+              className="text-sm font-medium mr-2"
+            >
+              Filter by Category:
+            </label>
+            <select
+              id="category-filter"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="p-2 border rounded-md bg-white dark:bg-gray-700 dark:border-gray-600"
+            >
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+            className="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-md text-sm font-medium"
           >
-            Create New Event
-          </Link>
-        ) : null}
+            Sort by Date:{" "}
+            {sortOrder === "asc" ? "Nearest First" : "Furthest First"}
+          </button>
+          {user.is_manager ? (
+            <Link
+              to="/create-event"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-semibold"
+            >
+              Create New Event
+            </Link>
+          ) : null}
+        </div>
       </div>
       {error ? (
         <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
           Error: {error}
         </div>
       ) : null}
-      {allEvents.length === 0 ? (
-        <p className="text-gray-500">No events found.</p>
+      {processedEvents.length === 0 ? (
+        <p className="text-gray-500">
+          No events found for the selected criteria.
+        </p>
       ) : (
         <div className="space-y-4">
-          {allEvents.map((event) => (
+          {processedEvents.map((event) => (
             <div
               key={event.event_id}
               className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md flex justify-between items-center"
@@ -105,6 +155,9 @@ export default function Dashboard() {
                     </span>
                   ) : null}
                 </h3>
+                <p className="text-sm font-semibold text-indigo-400 my-1">
+                  {event.category || "General"}
+                </p>
                 <p className="text-gray-500">
                   {new Date(event.date).toLocaleString()}
                 </p>

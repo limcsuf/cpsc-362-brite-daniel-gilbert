@@ -177,10 +177,11 @@ export default function EditEvent() {
             )}
           </div>
           <AddressPicker
-            initialAddress={formData.address}
-            onAddressSelect={(address) =>
-              setFormData({ ...formData, address: address })
-            }
+            defaultValue={formData.address}
+            onAddressSelect={(address) => {
+              // Use functional update to ensure state consistency
+              setFormData((prev) => ({ ...prev, address: address }));
+            }}
           />
           <button
             type="submit"
