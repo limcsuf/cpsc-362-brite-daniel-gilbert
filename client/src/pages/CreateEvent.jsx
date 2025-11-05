@@ -1,16 +1,16 @@
-// client/src/pages/CreateEvent.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { apiFetch } from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import AddressPicker from "../components/AddressPicker.jsx";
+import DatePicker from "../components/DatePicker.jsx";
 
 export default function CreateEvent() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [formData, setFormData] = useState({
     title: "",
-    date: "",
+    date: null, // store as Date object
     address: "",
     category: "",
   });
@@ -23,35 +23,27 @@ export default function CreateEvent() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        // This assumes you created the '/events/categories' endpoint
         const categories = await apiFetch("/events/categories");
-        if (categories && categories.length > 0) {
+        if (categories?.length) {
           setExistingCategories(categories);
-          // Default the form's category to the first one in the list
           setFormData((prev) => ({ ...prev, category: categories[0] }));
         } else {
-          // If no categories exist, force creation mode
           setIsCreatingNewCategory(true);
         }
-      } catch (err) {
-        console.error("Failed to fetch categories:", err);
-        // If the fetch fails, default to creation mode as a fallback
+      } catch {
         setIsCreatingNewCategory(true);
       }
     };
     fetchCategories();
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
   const handleCategoryToggle = (e) => {
     const isCreating = e.target.checked;
     setIsCreatingNewCategory(isCreating);
-    // Reset category in form data when toggling
-    if (isCreating) {
-      setFormData({ ...formData, category: "" });
-    } else {
-      // Default to the first existing category when switching back
-      setFormData({ ...formData, category: existingCategories[0] || "" });
-    }
+    setFormData({
+      ...formData,
+      category: isCreating ? "" : existingCategories[0] || "",
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -59,26 +51,26 @@ export default function CreateEvent() {
     setError("");
     setMessage("");
 
-    try {
-      // Convert date to ISO format for sending to the backend
-      const dateToSend = new Date(formData.date).toISOString();
+    if (!formData.date) {
+      setError("Please select a valid date and time.");
+      return;
+    }
 
+    try {
+      const dateToSend = formData.date.toISOString(); // store UTC
       await apiFetch("/events", {
         method: "POST",
         body: JSON.stringify({ ...formData, date: dateToSend }),
       });
-
       setMessage("Event created successfully!");
       setTimeout(() => navigate("/dashboard"), 1500);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Failed to create event.");
     }
   };
 
-  // Security check to ensure only managers can access this page
-  if (!user?.is_manager) {
+  if (!user?.is_manager)
     return <div className="text-center mt-10 text-red-500">Access Denied.</div>;
-  }
 
   return (
     <div className="max-w-xl mx-auto mt-10">
@@ -96,6 +88,7 @@ export default function CreateEvent() {
         {message && (
           <p className="text-green-500 text-center mb-4">{message}</p>
         )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
@@ -104,16 +97,21 @@ export default function CreateEvent() {
             onChange={(e) =>
               setFormData({ ...formData, title: e.target.value })
             }
-            className="w-full p-3 border rounded-md bg-gray-700 text-white border-gray-600"
+            className="w-full p-3 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white border-gray-300 dark:border-gray-600"
             required
           />
-          <input
-            type="datetime-local"
-            value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-            className="w-full p-3 border rounded-md bg-gray-700 text-white border-gray-600"
-            required
+
+          <DatePicker
+            selected={formData.date}
+            onChange={(date) =>
+              setFormData({
+                ...formData,
+                date: date,
+              })
+            }
+            placeholder="Select date & time"
           />
+
           <div className="p-3 border rounded-md border-gray-600 space-y-3">
             <div className="flex items-center">
               <input
@@ -126,12 +124,11 @@ export default function CreateEvent() {
               />
               <label
                 htmlFor="new-category-toggle"
-                className="ml-2 text-sm text-gray-300"
+                className="ml-2 text-sm text-gray-600 dark:text-gray-300"
               >
                 Create new category
               </label>
             </div>
-
             {isCreatingNewCategory ? (
               <input
                 type="text"
@@ -140,7 +137,7 @@ export default function CreateEvent() {
                 onChange={(e) =>
                   setFormData({ ...formData, category: e.target.value })
                 }
-                className="w-full p-3 border rounded-md bg-gray-700 text-white border-gray-600"
+                className="w-full p-3 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white border-gray-300 dark:border-gray-600"
                 required
               />
             ) : (
@@ -149,7 +146,7 @@ export default function CreateEvent() {
                 onChange={(e) =>
                   setFormData({ ...formData, category: e.target.value })
                 }
-                className="w-full p-3 border rounded-md bg-gray-700 text-white border-gray-600"
+                className="w-full p-3 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white border-gray-300 dark:border-gray-600"
               >
                 {existingCategories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -159,15 +156,15 @@ export default function CreateEvent() {
               </select>
             )}
           </div>
+
           <AddressPicker
             initialAddress={formData.address}
-            onAddressSelect={(address) =>
-              setFormData({ ...formData, address: address })
-            }
+            onAddressSelect={(address) => setFormData({ ...formData, address })}
           />
+
           <button
             type="submit"
-            className="w-full p-3 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="w-full p-3 bg-blue-600 dark:bg-blue-500 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
           >
             Create Event
           </button>

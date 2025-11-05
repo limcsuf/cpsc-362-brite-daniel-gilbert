@@ -24,6 +24,7 @@ const db = mysql
     user: "root",
     password: "11374932", // Your MySQL password
     database: "volunteer_site_362",
+    timezone: "Z",
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,

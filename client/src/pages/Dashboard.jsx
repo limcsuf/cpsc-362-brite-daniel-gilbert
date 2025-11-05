@@ -57,6 +57,21 @@ export default function Dashboard() {
     }
   };
 
+  const formatLocalDateTime = (isoDate) => {
+    if (!isoDate) return "TBD";
+    const date = new Date(isoDate); // ISO string → local Date
+    return isNaN(date.getTime())
+      ? "Invalid date"
+      : date.toLocaleString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true, // forces AM/PM
+        });
+  };
+
   useEffect(() => {
     fetchData();
   }, [user]);
@@ -159,8 +174,9 @@ export default function Dashboard() {
                   {event.category || "General"}
                 </p>
                 <p className="text-gray-500">
-                  {new Date(event.date).toLocaleString()}
+                  {formatLocalDateTime(event.date)}
                 </p>
+
                 <p className="text-gray-600 text-sm mt-1">{event.address}</p>
               </div>
               <div className="flex items-center space-x-3">

@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS managers (
 CREATE TABLE IF NOT EXISTS events (
     event_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
-    date DATETIME NOT NULL,
+    date TIMESTAMP NOT NULL,
     address TEXT NOT NULL,
     category VARCHAR(100) NOT NULL DEFAULT 'General',
     event_manager_id INT NOT NULL,
