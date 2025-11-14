@@ -1,15 +1,31 @@
 {
+  // Compiler and IntelliSense behavior settings for the project
   "compilerOptions": {
+    // Use modern ESNext modules for import/export behavior
     "module": "ESNext",
+
+    // Let the bundler (Vite) handle module resolution instead of Node or TS defaults
     "moduleResolution": "Bundler",
+
+    // Target modern JavaScript output (ES2022)
     "target": "ES2022",
+
+    // Enable the new JSX transform used by React (no need to import React)
     "jsx": "react-jsx",
+
+    // Allow importing TypeScript files using explicit .ts/.tsx extensions
     "allowImportingTsExtensions": true,
+
+    // Stronger type-safety: null must be explicitly handled
     "strictNullChecks": true,
+
+    // Prevent assigning functions where incompatible parameter types exist
     "strictFunctionTypes": true
   },
+
+  // Exclude folders from being analyzed or indexed
   "exclude": [
-    "node_modules",
-    "**/node_modules/*"
+    "node_modules",        // Ignore main node_modules folder
+    "**/node_modules/*"    // Also ignore nested node_modules folders (monorepos, etc.)
   ]
 }
