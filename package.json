@@ -1,10 +1,22 @@
 {
+  // Development-only tools used to improve code quality and formatting
   "devDependencies": {
+    // TypeScript-aware ESLint parser so ESLint can understand TS syntax
     "@typescript-eslint/parser": "^5.62.0",
+
+    // ESLint core library for linting JavaScript/TypeScript files
     "eslint": "^8.57.1",
+
+    // Code formatter for enforcing consistent styling
     "prettier": "^3.6.2",
+
+    // Integrates Prettier with ESLint so formatting and linting work together
     "prettier-eslint": "^16.4.2",
+
+    // TypeScript language support (compiler + type-checking)
     "typescript": "^4.9.5",
+
+    // ESLint parser for Vue files (likely included for compatibility or template parsing)
     "vue-eslint-parser": "^8.3.0"
   }
 }
