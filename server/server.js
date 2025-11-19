@@ -2,6 +2,7 @@ import express from "express";
 import mysql from "mysql2";
 import cors from "cors";
 import bcrypt from "bcryptjs";
+import nodemailer from "nodemailer";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
@@ -144,36 +145,81 @@ app.post("/api/users", async (req, res) => {
 app.post("/api/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
+
     const [[user]] = await db.query("SELECT * FROM users WHERE email = ?", [
       email,
     ]);
+
+    // Always generic response (prevents enumeration)
+    const genericMessage =
+      "If a user with that email exists, a password reset link has been sent.";
+
     if (!user) {
-      // Always return a generic message to prevent email enumeration attacks
-      return res.json({
-        message:
-          "If a user with that email exists, a password reset link has been sent.",
-      });
+      return res.json({ message: genericMessage });
     }
+
     const token = crypto.randomBytes(20).toString("hex");
-    const expires = new Date(Date.now() + parseInt(PASSWORD_RESET_EXPIRES_MS)); // Token expires in 1 hour
+    const expires = new Date(Date.now() + parseInt(PASSWORD_RESET_EXPIRES_MS));
+
     await db.query(
       "UPDATE users SET password_reset_token = ?, password_reset_expires = ? WHERE user_id = ?",
       [token, expires, user.user_id]
     );
 
-    // In a real application, you would use a service like SendGrid or Nodemailer to send an email.
-    console.log("--- PASSWORD RESET ---");
-    console.log(`User: ${user.email}`);
-    console.log(`Reset Link: http://localhost:5173/reset-password/${token}`); // Assuming frontend runs on 5173
-    console.log("--------------------");
+    const resetUrl = `http://localhost:5173/reset-password/${token}`;
 
-    res.json({
-      message:
-        "If a user with that email exists, a password reset link has been sent.",
+    // // Email setup
+    // const transporter = nodemailer.createTransport({
+    //   service: "gmail",
+    //   auth: {
+    //     user: process.env.EMAIL_USER,
+    //     pass: process.env.EMAIL_PASS, // Gmail app password
+    //   },
+    // });
+
+    // Updated email setup for local SMTP server
+    const nodemailer = require("nodemailer");
+
+    const transporter = nodemailer.createTransport({
+      host: "localhost",
+      port: 1025,
+      ignoreTLS: true,
     });
+
+    // // THIS is where the user's entered email is used
+    // const mailOptions = {
+    //   from: `"Support Team" <${process.env.EMAIL_USER}>`,
+    //   to: email, // send to exactly what user typed
+    //   subject: "Password Reset Instructions",
+    //   html: `
+    //     <p>You requested a password reset.</p>
+    //     <p>Click the link below to reset your password:</p>
+    //     <a href="${resetUrl}">${resetUrl}</a>
+    //     <p>This link will expire in 1 hour.</p>
+    //   `,
+    // };
+
+    // await transporter.sendMail(mailOptions);
+
+    // Updated mail options for local SMTP server
+    const mailOptions = {
+      from: `"Support Team" <no-reply@brite.com>`, // can be any address
+      to: email, // uses the email the user typed
+      subject: "Password Reset Instructions",
+      html: `
+    <p>You requested a password reset.</p>
+    <p>Click the link below to reset your password:</p>
+    <a href="${resetUrl}">${resetUrl}</a>
+    <p>This link will expire in 1 hour.</p>
+  `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return res.json({ message: genericMessage });
   } catch (err) {
     console.error("Forgot password error:", err);
-    res.status(500).json({ message: "An error occurred." });
+    return res.status(500).json({ message: "An error occurred." });
   }
 });
 
