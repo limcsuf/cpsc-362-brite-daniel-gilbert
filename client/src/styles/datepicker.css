@@ -1,0 +1,94 @@
+/* client/src/styles/datepicker.css */
+
+/* Input box */
+.datepicker-input {
+  @apply w-full p-3 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-150;
+  font-family: inherit;
+}
+
+/* Calendar popper */
+.datepicker-calendar {
+  @apply bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg;
+}
+
+/* Header ("September 2025") */
+.datepicker-header {
+  @apply bg-gray-100 dark:!bg-gray-700 text-gray-800 dark:!text-gray-200 font-semibold border-b border-gray-300 dark:border-gray-600 rounded-t-md;
+}
+
+/* Weekday labels ("Su", "Mo", etc.) */
+.datepicker-weekday {
+  @apply text-gray-600 dark:text-gray-300 font-medium;
+}
+
+/* Day cells */
+.datepicker-day {
+  @apply text-gray-900 dark:text-gray-100 rounded-full p-1 text-center cursor-pointer transition-colors duration-150;
+}
+
+.datepicker-day:hover {
+  @apply bg-blue-200 dark:bg-blue-700;
+}
+
+.react-datepicker__day--selected {
+  @apply bg-blue-600 text-white dark:bg-blue-500 dark:text-white;
+}
+
+.react-datepicker__day--today {
+  @apply border border-blue-600 dark:border-blue-400;
+}
+
+.react-datepicker__day--disabled {
+  @apply text-gray-400 dark:text-gray-600 cursor-not-allowed;
+}
+
+/* Base time item */
+.datepicker-calendar .react-datepicker__time-list-item {
+  @apply text-gray-800 dark:text-gray-100 rounded p-1 text-center cursor-pointer transition-colors duration-150;
+}
+
+/* Hovered (unselected) time item */
+.datepicker-calendar .react-datepicker__time-list-item:hover {
+  @apply bg-blue-100 dark:!bg-blue-700;
+}
+
+/* Selected time item (and its hover state) */
+.datepicker-calendar .react-datepicker__time-list-item--selected,
+.datepicker-calendar .react-datepicker__time-list-item--selected:hover {
+  @apply bg-blue-600 text-white dark:bg-blue-500 dark:text-white font-semibold;
+}
+
+/* Time list container (the scrollable part) */
+.react-datepicker__time-container .react-datepicker__time {
+  @apply bg-white dark:bg-gray-800 border-l border-gray-300 dark:border-gray-600 rounded-r-md;
+}
+
+/* Time Caption Header (the "Time" label) */
+.react-datepicker__time-header {
+  @apply font-semibold border-b border-l border-gray-300 dark:border-gray-600;
+  /* Force styles to match the calendar header */
+  @apply bg-gray-100 dark:!bg-gray-700 text-gray-800 dark:!text-gray-200;
+}
+
+/* Navigation arrows */
+.react-datepicker__navigation-icon::before {
+  @apply !border-gray-800 dark:!border-gray-400;
+}
+.react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
+  @apply !border-blue-600 dark:!border-blue-400;
+}
+
+/* Month container */
+.react-datepicker__month-container {
+  @apply bg-white dark:!bg-gray-800;
+}
+
+/* Time container (the whole right-side box) */
+.react-datepicker__time-container {
+  @apply bg-white dark:!bg-gray-800 border-l border-gray-300 dark:border-gray-600 rounded-r-md;
+}
+
+/* Popper z-index */
+.datepicker-popper {
+  @apply z-50;
+}
