@@ -8,9 +8,13 @@ import DatePicker from "../components/DatePicker.jsx";
 export default function CreateEvent() {
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // 1. Add Loading State
+  const [isLoading, setIsLoading] = useState(true);
+
   const [formData, setFormData] = useState({
     title: "",
-    date: null, // store as Date object
+    date: null,
     address: "",
     category: "",
   });
@@ -30,8 +34,12 @@ export default function CreateEvent() {
         } else {
           setIsCreatingNewCategory(true);
         }
-      } catch {
+      } catch (err) {
+        console.error("Error fetching categories:", err);
         setIsCreatingNewCategory(true);
+      } finally {
+        // 2. Stop loading once categories are fetched
+        setIsLoading(false);
       }
     };
     fetchCategories();
@@ -57,7 +65,7 @@ export default function CreateEvent() {
     }
 
     try {
-      const dateToSend = formData.date.toISOString(); // store UTC
+      const dateToSend = formData.date.toISOString();
       await apiFetch("/events", {
         method: "POST",
         body: JSON.stringify({ ...formData, date: dateToSend }),
@@ -71,6 +79,11 @@ export default function CreateEvent() {
 
   if (!user?.is_manager)
     return <div className="text-center mt-10 text-red-500">Access Denied.</div>;
+
+  // 3. Prevent rendering until setup is done
+  if (isLoading) {
+    return <div className="text-center mt-10">Loading form...</div>;
+  }
 
   return (
     <div className="max-w-xl mx-auto mt-10">
@@ -157,8 +170,10 @@ export default function CreateEvent() {
             )}
           </div>
 
+          {/* Address Picker */}
           <AddressPicker
-            initialAddress={formData.address}
+            key={isLoading ? "loading" : "loaded"}
+            defaultValue={formData.address}
             onAddressSelect={(address) => setFormData({ ...formData, address })}
           />
 

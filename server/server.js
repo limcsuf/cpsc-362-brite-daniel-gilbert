@@ -70,7 +70,11 @@ app.post("/api/login", async (req, res) => {
 
     // Generate JWT
     const token = jwt.sign(
-      { user_id: user.user_id, is_manager: !!user.is_manager },
+      {
+        user_id: user.user_id,
+        is_manager: !!user.is_manager,
+        name: user.name,
+      },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );
@@ -141,6 +145,22 @@ app.post("/api/users", async (req, res) => {
   }
 });
 
+// Setup Nodemailer transporter globally
+// Create a test account and transporter for sending emails
+console.log("Generating Ethereal test account...");
+const testAccount = await nodemailer.createTestAccount();
+
+const transporter = nodemailer.createTransport({
+  host: "smtp.ethereal.email",
+  port: 587,
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: testAccount.user, // generated ethereal user
+    pass: testAccount.pass, // generated ethereal password
+  },
+});
+console.log(`Ethereal Account created: ${testAccount.user}`);
+
 // 3. Forgot Password
 app.post("/api/forgot-password", async (req, res) => {
   try {
@@ -150,7 +170,6 @@ app.post("/api/forgot-password", async (req, res) => {
       email,
     ]);
 
-    // Always generic response (prevents enumeration)
     const genericMessage =
       "If a user with that email exists, a password reset link has been sent.";
 
@@ -158,64 +177,36 @@ app.post("/api/forgot-password", async (req, res) => {
       return res.json({ message: genericMessage });
     }
 
+    // ... Token generation and DB update logic ...
     const token = crypto.randomBytes(20).toString("hex");
     const expires = new Date(Date.now() + parseInt(PASSWORD_RESET_EXPIRES_MS));
+    const resetUrl = `http://localhost:5173/reset-password/${token}`;
 
     await db.query(
       "UPDATE users SET password_reset_token = ?, password_reset_expires = ? WHERE user_id = ?",
       [token, expires, user.user_id]
     );
 
-    const resetUrl = `http://localhost:5173/reset-password/${token}`;
-
-    // // Email setup
-    // const transporter = nodemailer.createTransport({
-    //   service: "gmail",
-    //   auth: {
-    //     user: process.env.EMAIL_USER,
-    //     pass: process.env.EMAIL_PASS, // Gmail app password
-    //   },
-    // });
-
-    // Updated email setup for local SMTP server
-    const nodemailer = require("nodemailer");
-
-    const transporter = nodemailer.createTransport({
-      host: "localhost",
-      port: 1025,
-      ignoreTLS: true,
-    });
-
-    // // THIS is where the user's entered email is used
-    // const mailOptions = {
-    //   from: `"Support Team" <${process.env.EMAIL_USER}>`,
-    //   to: email, // send to exactly what user typed
-    //   subject: "Password Reset Instructions",
-    //   html: `
-    //     <p>You requested a password reset.</p>
-    //     <p>Click the link below to reset your password:</p>
-    //     <a href="${resetUrl}">${resetUrl}</a>
-    //     <p>This link will expire in 1 hour.</p>
-    //   `,
-    // };
-
-    // await transporter.sendMail(mailOptions);
-
-    // Updated mail options for local SMTP server
+    // Define the email content
     const mailOptions = {
-      from: `"Support Team" <no-reply@brite.com>`, // can be any address
-      to: email, // uses the email the user typed
+      from: `"Support Team" <no-reply@test.com>`,
+      to: email,
       subject: "Password Reset Instructions",
       html: `
-    <p>You requested a password reset.</p>
-    <p>Click the link below to reset your password:</p>
-    <a href="${resetUrl}">${resetUrl}</a>
-    <p>This link will expire in 1 hour.</p>
-  `,
+        <p>You requested a password reset.</p>
+        <p>Click the link below to reset your password:</p>
+        <a href="${resetUrl}">${resetUrl}</a>
+        <p>This link will expire in 1 hour.</p>
+      `,
     };
 
-    await transporter.sendMail(mailOptions);
+    // Send the email using the global 'transporter' variable
+    const info = await transporter.sendMail(mailOptions);
 
+    console.log("Message sent: %s", info.messageId);
+    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+
+    // Send success response to client
     return res.json({ message: genericMessage });
   } catch (err) {
     console.error("Forgot password error:", err);

@@ -15,33 +15,37 @@ export function AuthProvider({ children }) {
     const token = getToken();
     if (token) {
       try {
-        // Decode the token to get user info without a network call
         const decodedUser = jwtDecode(token);
-        // Optional: You could add a check here to see if the token is expired
+
+        // Check if token is expired (optional but recommended)
+        const currentTime = Date.now() / 1000;
+        if (decodedUser.exp < currentTime) {
+          throw new Error("Token expired");
+        }
+
+        // Set user state directly from the token
         setUser({
           user_id: decodedUser.user_id,
           is_manager: decodedUser.is_manager,
-          // Note: The token only contains id and manager status.
-          // Full user data like name/email is fetched upon login.
+          name: decodedUser.name, // <--- Now available from the token!
         });
       } catch (error) {
-        console.error("Invalid token:", error);
-        removeToken(); // Clear bad token
+        console.error("Invalid or expired token:", error);
+        removeToken();
+        setUser(null);
       }
     }
     setLoading(false);
   }, []);
 
   const login = async (username, password) => {
-    // The backend expects '/api/login' and returns token + user data
     const data = await apiFetch("/login", {
       method: "POST",
       body: JSON.stringify({ username, password }),
     });
 
-    // The response from your backend already contains the token and user object
     setToken(data.token);
-    setUser(data.user);
+    setUser(data.user); // Set user state from response
   };
 
   const logout = () => {

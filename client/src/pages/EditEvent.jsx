@@ -17,7 +17,7 @@ export default function EditEvent() {
   const parseBackendDate = (isoDate) => {
     if (!isoDate) return null;
     const date = new Date(isoDate);
-    return isNaN(date.getTime()) ? null : date; // invalid dates return null
+    return isNaN(date.getTime()) ? null : date;
   };
 
   // Form state
@@ -34,26 +34,53 @@ export default function EditEvent() {
   const [isCreatingNewCategory, setIsCreatingNewCategory] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
+  // New Loading State
+  const [isLoading, setIsLoading] = useState(!initialEvent);
+
+  // 1. Fetch Categories AND Event Details (if missing)
   useEffect(() => {
-    const fetchCategories = async () => {
+    const loadData = async () => {
       try {
+        // Fetch Categories
         const categories = await apiFetch("/events/categories");
         if (categories && categories.length > 0) {
           setExistingCategories(categories);
-          setFormData((prev) => ({
-            ...prev,
-            category: prev.category || categories[0],
-          }));
+          // Only set default category if we don't already have one from initialEvent
+          if (!formData.category) {
+            setFormData((prev) => ({
+              ...prev,
+              category: categories[0],
+            }));
+          }
         } else {
           setIsCreatingNewCategory(true);
         }
+
+        // Fetch Event Data if not provided via navigation state (Page Refresh)
+        if (!initialEvent) {
+          const fetchedEvent = await apiFetch(`/events/${eventId}`);
+
+          if (fetchedEvent) {
+            setFormData({
+              title: fetchedEvent.title,
+              date: parseBackendDate(fetchedEvent.date),
+              address: fetchedEvent.address,
+              category: fetchedEvent.category,
+            });
+          } else {
+            setError("Event not found.");
+          }
+        }
       } catch (err) {
-        console.error("Failed to fetch categories:", err);
-        setIsCreatingNewCategory(true);
+        console.error("Failed to load data:", err);
+        setError("Failed to load event data.");
+      } finally {
+        setIsLoading(false);
       }
     };
-    fetchCategories();
-  }, []);
+
+    loadData();
+  }, [eventId, initialEvent]); // Run on mount
 
   const handleCategoryToggle = (e) => {
     const isCreating = e.target.checked;
@@ -70,7 +97,6 @@ export default function EditEvent() {
     setMessage("");
 
     try {
-      // Convert local Date object to ISO (UTC) before sending
       const dateToSend = formData.date ? formData.date.toISOString() : null;
 
       await apiFetch(`/events/${eventId}`, {
@@ -97,6 +123,10 @@ export default function EditEvent() {
       alert("Failed to delete event. Please try again.");
     }
   };
+
+  if (isLoading) {
+    return <div className="text-center mt-10">Loading event data...</div>;
+  }
 
   if (!user?.is_manager) {
     return (
@@ -142,7 +172,7 @@ export default function EditEvent() {
 
           {/* Date/Time Picker */}
           <DatePicker
-            selected={formData.date} // Date object or null
+            selected={formData.date}
             onChange={(date) => setFormData((prev) => ({ ...prev, date }))}
             dateFormat="yyyy-MM-dd h:mm aa"
             showTimeSelect
@@ -197,11 +227,12 @@ export default function EditEvent() {
 
           {/* Address Picker */}
           <AddressPicker
+            key={isLoading ? "loading" : "loaded"}
             defaultValue={formData.address}
             onAddressSelect={(address) => setFormData({ ...formData, address })}
           />
 
-          {/* Update Button */}
+          {/* Buttons */}
           <button
             type="submit"
             className="w-full p-3 bg-blue-600 dark:bg-blue-500 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
@@ -209,7 +240,6 @@ export default function EditEvent() {
             Update Event
           </button>
 
-          {/* Delete Button */}
           <button
             type="button"
             onClick={handleDeleteClick}
