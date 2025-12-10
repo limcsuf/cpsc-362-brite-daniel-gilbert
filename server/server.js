@@ -222,7 +222,7 @@ app.post("/api/reset-password/:token", async (req, res) => {
     const { password } = req.body;
 
     const [[user]] = await db.query(
-      "SELECT * FROM users WHERE password_reset_token = ? AND password_reset_expires > NOW()",
+      "SELECT * FROM users WHERE password_reset_token = ? AND password_reset_expires > ?",
       [token, now]
     );
 
