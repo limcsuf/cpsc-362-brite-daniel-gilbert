@@ -6,25 +6,45 @@ import nodemailer from "nodemailer";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3001; //use env port or 3001
+
+// --- ES Module Fix for __dirname ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
+// --- Middleware ---
+app.use(cors());
+app.use(express.json());
+
+// --- Static File Serving ---
+// This tells Express to serve the built React files from the client's dist folder
+app.use(express.static(path.join(__dirname, "../client/dist")));
+
+// --- Environment Variables ---
 const MANAGER_SECRET_KEY = process.env.MANAGER_SECRET_KEY;
 const JWT_SECRET = process.env.JWT_SECRET;
 const PASSWORD_RESET_EXPIRES_MS =
   process.env.PASSWORD_RESET_EXPIRES_MS || 3600000;
 const JWT_EXPIRES_IN = "2h";
 
+const DB_HOST = process.env.DB_HOST;
+const DB_USER = process.env.DB_USER;
+const DB_PASS = process.env.DB_PASS;
+const DB_NAME = process.env.DB_NAME;
+
 // --- Database Connection ---
 const db = mysql
   .createPool({
-    host: "localhost",
-    user: "root",
-    password: "11374932", // Your MySQL password
-    database: "volunteer_site_362",
+    host: DB_HOST,
+    user: DB_USER,
+    password: DB_PASS, // Your MySQL password
+    database: DB_NAME,
     timezone: "Z",
     waitForConnections: true,
     connectionLimit: 10,
@@ -62,7 +82,7 @@ app.post("/api/login", async (req, res) => {
     }
     const isPasswordCorrect = await bcrypt.compare(
       password,
-      user.password_hash
+      user.password_hash,
     );
     if (!isPasswordCorrect) {
       return res.status(401).json({ message: "Invalid username or password." });
@@ -76,7 +96,7 @@ app.post("/api/login", async (req, res) => {
         name: user.name,
       },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
+      { expiresIn: JWT_EXPIRES_IN },
     );
 
     // Return token + user data (without password hash)
@@ -99,7 +119,7 @@ app.post("/api/users", async (req, res) => {
 
     const [[existingUser]] = await connection.query(
       "SELECT user_id FROM users WHERE username = ? OR email = ?",
-      [username, email]
+      [username, email],
     );
     if (existingUser) {
       connection.release();
@@ -118,7 +138,7 @@ app.post("/api/users", async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 12);
     const [result] = await connection.query(
       "INSERT INTO users (name, email, username, password_hash, is_manager) VALUES (?, ?, ?, ?, ?)",
-      [name, email, username, passwordHash, isManager]
+      [name, email, username, passwordHash, isManager],
     );
 
     if (isManager) {
@@ -184,7 +204,7 @@ app.post("/api/forgot-password", async (req, res) => {
 
     await db.query(
       "UPDATE users SET password_reset_token = ?, password_reset_expires = ? WHERE user_id = ?",
-      [token, expires, user.user_id]
+      [token, expires, user.user_id],
     );
 
     // Define the email content
@@ -223,7 +243,7 @@ app.post("/api/reset-password/:token", async (req, res) => {
 
     const [[user]] = await db.query(
       "SELECT * FROM users WHERE password_reset_token = ? AND password_reset_expires > ?",
-      [token, now]
+      [token, now],
     );
 
     console.log("--- PASSWORD TOKEN CHECK ---");
@@ -231,12 +251,12 @@ app.post("/api/reset-password/:token", async (req, res) => {
     if (user) {
       console.log(
         `Found user. Token expires at: ${new Date(
-          user.password_reset_expires
-        ).toLocaleString()}`
+          user.password_reset_expires,
+        ).toLocaleString()}`,
       );
     } else {
       console.log(
-        "No valid user found for this token. It may be invalid or expired."
+        "No valid user found for this token. It may be invalid or expired.",
       );
     }
     console.log("--------------------------");
@@ -250,7 +270,7 @@ app.post("/api/reset-password/:token", async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 12);
     await db.query(
       "UPDATE users SET password_hash = ?, password_reset_token = NULL, password_reset_expires = NULL WHERE user_id = ?",
-      [passwordHash, user.user_id]
+      [passwordHash, user.user_id],
     );
 
     res.json({ message: "Password has been updated successfully." });
@@ -266,7 +286,7 @@ app.post("/api/reset-password/:token", async (req, res) => {
 app.get("/api/users", async (req, res) => {
   try {
     const [users] = await db.query(
-      "SELECT user_id, name, is_manager FROM users ORDER BY name"
+      "SELECT user_id, name, is_manager FROM users ORDER BY name",
     );
     res.json(users);
   } catch (err) {
@@ -297,7 +317,7 @@ app.get("/api/events", async (req, res) => {
 app.get("/api/events/categories", async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT DISTINCT category FROM events WHERE category IS NOT NULL AND category <> '' ORDER BY category ASC"
+      "SELECT DISTINCT category FROM events WHERE category IS NOT NULL AND category <> '' ORDER BY category ASC",
     );
     // Map the array of objects ({ category: 'Name' }) to an array of strings ['Name']
     const categories = rows.map((row) => row.category);
@@ -314,13 +334,13 @@ app.get("/api/users/:userId/attending", async (req, res) => {
     const { userId } = req.params;
     const [attendingEvents] = await db.query(
       "SELECT event_id FROM event_attendees WHERE user_id = ?",
-      [userId]
+      [userId],
     );
     res.json(attendingEvents.map((e) => e.event_id));
   } catch (err) {
     console.error(
       `Error fetching attending events for user ${req.params.userId}:`,
-      err
+      err,
     );
     res.status(500).json({ message: "Error fetching user data." });
   }
@@ -332,13 +352,13 @@ app.get("/api/events/:eventId/attendees", async (req, res) => {
     const { eventId } = req.params;
     const [attendees] = await db.query(
       `SELECT u.user_id, u.name, u.email, u.is_manager FROM event_attendees ea JOIN users u ON ea.user_id = u.user_id WHERE ea.event_id = ? ORDER BY u.name`,
-      [eventId]
+      [eventId],
     );
     res.json(attendees);
   } catch (err) {
     console.error(
       `Error fetching attendees for event ${req.params.eventId}:`,
-      err
+      err,
     );
     res.status(500).json({ message: "Error fetching event attendees." });
   }
@@ -357,7 +377,7 @@ app.post("/api/events/:eventId/attendees", requireManager, async (req, res) => {
     // Check if the user is already attending
     const [[existing]] = await db.query(
       "SELECT * FROM event_attendees WHERE event_id = ? AND user_id = ?",
-      [eventId, userId]
+      [eventId, userId],
     );
     if (existing) {
       return res
@@ -367,7 +387,7 @@ app.post("/api/events/:eventId/attendees", requireManager, async (req, res) => {
 
     await db.query(
       "INSERT INTO event_attendees (event_id, user_id) VALUES (?, ?)",
-      [eventId, userId]
+      [eventId, userId],
     );
     res.status(201).json({ message: "User successfully added to the event." });
   } catch (err) {
@@ -385,14 +405,14 @@ app.delete(
       const { eventId, userId } = req.params;
       await db.query(
         "DELETE FROM event_attendees WHERE event_id = ? AND user_id = ?",
-        [eventId, userId]
+        [eventId, userId],
       );
       res.json({ message: "User has been removed from the event." });
     } catch (err) {
       console.error("Error removing user from event:", err);
       res.status(500).json({ message: "Error removing user from event." });
     }
-  }
+  },
 );
 
 function requireAuth(req, res, next) {
@@ -435,7 +455,7 @@ app.post("/api/events", requireManager, async (req, res) => {
 
     await db.query(
       "INSERT INTO events (title, date, address, category, event_manager_id) VALUES (?, ?, ?, ?, ?)",
-      [title, formattedDate, address, category, managerId]
+      [title, formattedDate, address, category, managerId],
     );
     res.status(201).json({ message: "Event created successfully." });
   } catch (err) {
@@ -456,7 +476,7 @@ app.put("/api/events/:eventId", requireManager, async (req, res) => {
 
     await db.query(
       "UPDATE events SET title = ?, date = ?, address = ?, category = ? WHERE event_id = ?",
-      [title, formattedDate, address, category, eventId]
+      [title, formattedDate, address, category, eventId],
     );
     res.json({ message: "Event updated successfully." });
   } catch (err) {
@@ -498,7 +518,7 @@ app.post("/api/events/:eventId/attend", requireAuth, async (req, res) => {
 
     const [[existing]] = await db.query(
       "SELECT * FROM event_attendees WHERE event_id = ? AND user_id = ?",
-      [eventId, userId]
+      [eventId, userId],
     );
     if (existing) {
       return res
@@ -508,7 +528,7 @@ app.post("/api/events/:eventId/attend", requireAuth, async (req, res) => {
 
     await db.query(
       "INSERT INTO event_attendees (event_id, user_id) VALUES (?, ?)",
-      [eventId, userId]
+      [eventId, userId],
     );
     res.status(201).json({ message: "Successfully registered for the event." });
   } catch (err) {
@@ -525,7 +545,7 @@ app.delete("/api/events/:eventId/unattend", requireAuth, async (req, res) => {
 
     await db.query(
       "DELETE FROM event_attendees WHERE event_id = ? AND user_id = ?",
-      [eventId, userId]
+      [eventId, userId],
     );
     res.json({ message: "You have been removed from the event." });
   } catch (err) {
@@ -534,12 +554,19 @@ app.delete("/api/events/:eventId/unattend", requireAuth, async (req, res) => {
   }
 });
 
-// Catch-all 404
+// Error 404
 app.use((req, res) => {
   res.status(404).json({ message: "API endpoint not found." });
 });
 
+// --- The "Catch-All" Route ---
+// This MUST be the last route. It sends the index.html for any non-API request,
+// allowing React Router to handle the URL on the client side.
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/dist", "index.html"));
+});
+
 // --- Server Start ---
 app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+  console.log(`Server running on port ${port}`);
 });

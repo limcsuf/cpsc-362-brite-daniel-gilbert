@@ -1,56 +1,89 @@
-# CPSC 362 Project
+# CPSC 362 Project - Event Manager
 
 ## Members
-
 - Brite Bartnek
 - Daniel Lim
 - Gilbert Cervantes
 
 ## Description
+A volunteer-focused platform for logging events, managing profiles, and tracking event history. This project utilizes a **unified monorepo** architecture, allowing the React frontend to be served directly via the Express backend.
 
-A volunteer-focused website where they can log events, sign in to a profile, and view event history.
+---
 
-## Environment Setup
+## 🛠 Environment Setup
 
-This project uses environment variables to handle sensitive information like API keys and secrets. To run the project locally, you will need to create your own `.env` files.
+The project requires specific environment variables to bridge the connection between the client, server, and external APIs.
 
-### 1. Server Setup
+### 1. Root Directory (.env)
 
-Navigate to the `server` directory and create your environment file:
+Create a `.env` file in the **root** folder (the top level of the project) to handle backend security and database access:
 
-```bash
-cd server
-cp env.txt .env
+```env
+# Security
+MANAGER_SECRET_KEY=your_manager_password
+JWT_SECRET=your_jwt_signing_key
+PASSWORD_RESET_EXPIRES_MS=3600000
+
+# Database
+DB_HOST=localhost
+DB_USER=root
+DB_PASS=your_mysql_password
+DB_NAME=volunteer_site_362
 ```
 
-Now, open the newly created server/.env file and replace the placeholder values with your own secrets.
+### 2. Client Directory (.env)
 
-### 2. Client Setup
-
-Navigate to the client directory and create your environment file:
+Navigate to the `client` folder and create a second `.env` file for frontend-specific keys:
 
 ```bash
 cd client
-cp env.txt .env
+# Add your Google Maps API Key
+VITE_GOOGLE_MAPS_API_KEY=your_api_key_here
 ```
 
-Now, open the newly created client/.env file and add your Google Maps API key.
+*Note: Ensure the **Maps JavaScript API** and **Places API** are enabled in your [Google Cloud Console](https://console.cloud.google.com/).*
 
-Go to the [Google Cloud Console](https://console.cloud.google.com/) to get an API key.
+---
 
-- Create a new project
-- Open the navigation menu and go to `APIs & Services`.
-- Add the `JavaScript Maps API` and `Places API`. Use the old `Places API` as the `Places API (New)` is paid.
+## 🚀 Running the Project Locally
 
-## Running the server/site
+### 1. Database Setup
 
-1. Clone the repository/download the .zip
-2. Load the schema.sql in MySQL and run the file. Set up your server to be whatever you want. Make sure to edit /server/server.js and client/vite.config.js to point to your MySQL server setup.
-   - Defaults to:
-   - localhost:3001(server)|5173(client)
-   - user:root <# Change this to whatever your MySQL connection is
-   - password: <# Change this to whatever your MySQL password is
-   - database:volunteer_site_362
-3. Open an elevated command prompt in the server folder and execute `npm install` and then `npm start`.
-4. Open a second elevated command prompt in the client folder and execute `npm install` and then `npm run dev`.
-5. Load the main web page with either 1) ctrl + click the link in the `client` terminal, or 2) load the `http://localhost:5173/login`
+Execute the `schema.sql` file in your MySQL environment. Ensure the credentials in your root `.env` match your local MySQL configuration.
+
+### 2. Install All Dependencies
+
+From the **root** folder, run this command to install packages for the root, client, and server simultaneously:
+
+```bash
+npm run install-all
+```
+
+### 3. Execution Commands
+
+| Mode            | Command        | Description                                                        |
+| :-------------- | :------------- | :----------------------------------------------------------------- |
+| **Development** | `npm run dev`  | Runs Vite (5173) and Node (3001) concurrently with hot-reload.     |
+| **Production**  | `npm run prod` | Builds React and serves it via Express (3001) as a single process. |
+
+---
+
+## 🌐 Deployment (Render / Railway)
+
+This project is optimized for modern cloud platforms. By serving the frontend via the backend, you only need to deploy **one** web service.
+
+### Configuration Settings
+
+- **Build Command:** ```npm run install-all && npm run build```
+- **Start Command:** ```npm run start```
+- **Environment Variables:*3001* Ensure all variables from your root `.env` are added to the platform's dashboard. Update `DB_HOST` to your production database URL.
+
+---
+
+## 📂 Project Structure
+
+- **/client**: React + Vite frontend.
+- **/server**: Express API, database logic, and middleware.
+- **/server/server.js**: The single entry point that manages API requests and serves the built frontend.
+- **/eslint.config.js**: Unified linting rules for the entire workspace.
+- 
