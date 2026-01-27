@@ -12,11 +12,19 @@ import { fileURLToPath } from "url";
 const app = express();
 const port = process.env.PORT || 3001; //use env port or 3001
 
+// --- ES Module Fix for __dirname ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 dotenv.config();
 
 // --- Middleware ---
 app.use(cors());
 app.use(express.json());
+
+// --- Static File Serving ---
+// This tells Express to serve the built React files from the client's dist folder
+app.use(express.static(path.join(__dirname, "../client/dist")));
 
 // --- Environment Variables ---
 const MANAGER_SECRET_KEY = process.env.MANAGER_SECRET_KEY;
@@ -30,25 +38,23 @@ const DB_USER = process.env.DB_USER;
 const DB_PASS = process.env.DB_PASS;
 const DB_NAME = process.env.DB_NAME;
 
-// --- Database Connection (Hybrid Logic) ---
-// Railway provides a DATABASE_URL or MYSQL_URL.
-// If that exists, we use it. Otherwise, we use individual local variables.
-const dbConfig = process.env.DATABASE_URL || {
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASS || "",
-  database: process.env.DB_NAME || "volunteer_site_362",
-  timezone: "Z",
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-};
+// --- Database Connection ---
+const db = mysql
+  .createPool({
+    host: DB_HOST,
+    user: DB_USER,
+    password: DB_PASS, // Your MySQL password
+    database: DB_NAME,
+    timezone: "Z",
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+  })
+  .promise();
 
-const db = mysql.createPool(dbConfig).promise();
-
-// --- Static File Serving ---
-// This tells Express to serve the built React files from the client's dist folder
-app.use(express.static(path.join(__dirname, "../client/dist")));
+// --- Middleware ---
+app.use(cors());
+app.use(express.json());
 
 // --- API Endpoints ---
 
@@ -548,17 +554,14 @@ app.delete("/api/events/:eventId/unattend", requireAuth, async (req, res) => {
   }
 });
 
-// --- IMPORTANT: ROUTE ORDER FIX ---
-
-// 1. First, handle specific API 404s
-// If a request starts with /api but didn't match any routes above, return JSON 404
-app.use("/api/*", (req, res) => {
+// Error 404
+app.use((req, res) => {
   res.status(404).json({ message: "API endpoint not found." });
 });
 
-// 2. The "Catch-All" for React
-// For ANY other request (like /dashboard or /login), serve the React index.html.
-// This MUST stay at the very bottom.
+// --- The "Catch-All" Route ---
+// This MUST be the last route. It sends the index.html for any non-API request,
+// allowing React Router to handle the URL on the client side.
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/dist", "index.html"));
 });
@@ -566,7 +569,4 @@ app.get("*", (req, res) => {
 // --- Server Start ---
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
-  console.log(
-    `Connected to database at: ${process.env.DATABASE_URL ? "Railway Remote" : "Localhost"}`,
-  );
 });
