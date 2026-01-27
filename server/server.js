@@ -10,12 +10,23 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const app = express();
-const port = process.env.PORT || 3001; //use env port or 3001
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
 dotenv.config();
 
 // --- Middleware ---
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "https://cpsc362-event-manager.netlify.app", // Your actual Netlify URL
+      "http://localhost:5173", // For local development
+    ],
+    credentials: true,
+  }),
+);
 app.use(express.json());
 
 // --- Environment Variables ---
@@ -33,12 +44,16 @@ const DB_NAME = process.env.DB_NAME;
 // --- Database Connection (Hybrid Logic) ---
 // Railway provides a DATABASE_URL or MYSQL_URL.
 // If that exists, we use it. Otherwise, we use individual local variables.
-const dbConfig = process.env.DATABASE_URL || {
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASS || "",
-  database: process.env.DB_NAME || "volunteer_site_362",
-  timezone: "Z",
+const dbConfig = {
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT || 4000,
+  ssl: {
+    minVersion: "TLSv1.2",
+    rejectUnauthorized: false, // Necessary for many cloud environments
+  },
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
